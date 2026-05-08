@@ -1,0 +1,13 @@
+<header class="topbar">
+  <h1><a routerLink="/alerts">price-tracker</a></h1>
+  @if (auth.authenticated()) {
+    <div class="user">
+      <span>{{ auth.userEmail() }}</span>
+      <button (click)="logout()">Sair</button>
+    </div>
+  }
+</header>
+
+<main>
+  <router-outlet />
+</main>
