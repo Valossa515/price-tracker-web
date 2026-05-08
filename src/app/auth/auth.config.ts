@@ -4,7 +4,8 @@ import { environment } from '../../environments/environment';
 export const authConfig: AuthConfig = {
   issuer: environment.cognito.issuer,
   clientId: environment.cognito.clientId,
-  redirectUri: environment.cognito.redirectUri,
+  redirectUri: window.location.origin + '/callback',
+  postLogoutRedirectUri: window.location.origin + '/logout',
   responseType: 'code',
   scope: environment.cognito.scope,
   showDebugInformation: false,
