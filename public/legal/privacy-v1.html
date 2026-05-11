@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Política de Privacidade — Little Price Tracker (v1)</title>
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         max-width: 760px; margin: 2rem auto; padding: 0 1rem; color: #222; line-height: 1.55; }
+  h1 { margin-top: 0; }
+  h2 { margin-top: 2rem; }
+  small { color: #666; }
+  code { background: #f3f3f3; padding: 0 0.25rem; border-radius: 3px; }
+</style>
+</head>
+<body>
+<h1>Política de Privacidade</h1>
+<p><small>Versão <strong>v1</strong> — vigente desde 2025.</small></p>
+
+<p>Esta Política descreve como o serviço <strong>Little Price Tracker</strong>
+(“Serviço”) trata seus dados pessoais, em conformidade com a Lei nº 13.709/2018
+(LGPD).</p>
+
+<h2>1. Quais dados coletamos</h2>
+<ul>
+  <li><strong>Identificação</strong>: identificador único (<code>sub</code>) e e-mail
+      fornecidos pelo provedor de autenticação (Amazon Cognito) quando você faz login.</li>
+  <li><strong>Conteúdo do alerta</strong>: URL de produto, nome, preço-alvo,
+      preço observado e histórico de checagens.</li>
+  <li><strong>Registros técnicos</strong>: endereço IP, user-agent e data/hora
+      no momento em que você aceita esta Política e os Termos de Uso (trilha de auditoria).</li>
+</ul>
+
+<h2>2. Para que usamos</h2>
+<ul>
+  <li>Operar a funcionalidade de monitoramento de preços e envio de notificações por e-mail.</li>
+  <li>Comprovar o aceite dos documentos legais (base legal: cumprimento de obrigação legal/regulatória — art. 7º, II da LGPD).</li>
+  <li>Garantir a segurança do Serviço (prevenção a fraude e abuso — art. 7º, IX).</li>
+</ul>
+
+<h2>3. Compartilhamento</h2>
+<p>Não vendemos dados pessoais. Compartilhamos dados estritamente com:</p>
+<ul>
+  <li>Provedor de autenticação (AWS Cognito) — armazenamento da conta.</li>
+  <li>Provedor de e-mail transacional (AWS SES) — entrega de notificações de preço.</li>
+  <li>Marketplaces consultados (ex.: Mercado Livre) — apenas a URL pública que você cadastrou é consultada; nenhum dado pessoal seu é enviado.</li>
+</ul>
+
+<h2>4. Armazenamento e retenção</h2>
+<p>Dados são armazenados em banco PostgreSQL hospedado na AWS. Mantemos os
+dados enquanto sua conta estiver ativa. Quando você solicita a exclusão da
+conta, removemos: todos os seus alertas, o registro de consentimentos e o
+usuário no provedor de autenticação.</p>
+
+<h2>5. Seus direitos (LGPD, art. 18)</h2>
+<ul>
+  <li>Confirmação e acesso aos dados.</li>
+  <li>Correção de dados incompletos ou desatualizados.</li>
+  <li>Eliminação dos dados — disponível diretamente no app em
+      <em>“Excluir conta”</em>.</li>
+  <li>Revogação do consentimento.</li>
+</ul>
+<p>Para exercer qualquer direito, escreva para o e-mail de contato indicado no
+rodapé do Serviço.</p>
+
+<h2>6. Segurança</h2>
+<p>Aplicamos criptografia em trânsito (HTTPS) e controle de acesso por
+token JWT. A senha não é armazenada por nós — fica sob responsabilidade do provedor de identidade.</p>
+
+<h2>7. Alterações</h2>
+<p>Mudanças materiais nesta Política implicam emissão de uma nova versão. Você
+será solicitado a aceitá-la no próximo acesso.</p>
+</body>
+</html>

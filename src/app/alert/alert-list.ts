@@ -16,6 +16,7 @@ import { Alert } from './alert.model';
           {{ checking() ? 'Verificando...' : 'Verificar agora' }}
         </button>
         <a routerLink="/alerts/new" class="btn-primary">+ Novo alerta</a>
+        <a routerLink="/account/delete" class="btn-link-danger" title="Excluir minha conta">Excluir conta</a>
       </div>
     </div>
 
@@ -71,7 +72,8 @@ import { Alert } from './alert.model';
     .status-paused { background: #eee; color: #666; }
     button, a.btn-primary { padding: 0.4rem 0.9rem; border-radius: 4px; border: 1px solid #ccc; cursor: pointer; background: white; text-decoration: none; color: inherit; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
-    a.btn-primary { background: #1976d2; color: white; border-color: #1976d2; }
+    a.btn-primary { background: #1976d2; color: white; bor
+    .btn-link-danger { color: #b00020; font-size: 0.85em; text-decoration: underline; border: none; padding: 0.4rem; background: transparent; }der-color: #1976d2; }
     .btn-danger { color: #b00020; border-color: #b00020; }
   `],
 })
