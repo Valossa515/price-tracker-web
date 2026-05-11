@@ -32,4 +32,5 @@ export const routes: Routes = [
     path: 'callback',
     loadComponent: () => import('./callback/callback').then(m => m.Callback),
   },
+  { path: 'logout', pathMatch: 'full', redirectTo: '' },
 ];
