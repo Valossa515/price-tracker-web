@@ -24,7 +24,13 @@ import { AlertService } from './alert.service';
       </label>
       <label>
         Preço alvo (R$)
-        <input type="number" step="0.01" min="0.01" formControlName="targetPrice">
+        <input
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          [value]="priceMasked()"
+          (input)="onPriceInput($event)"
+          placeholder="R$ 0,00">
       </label>
 
       @if (error()) {
@@ -58,12 +64,32 @@ export class AlertCreate {
 
   readonly submitting = signal(false);
   readonly error = signal<string | null>(null);
+  readonly priceMasked = signal('');
 
   readonly form = this.fb.nonNullable.group({
     productUrl: ['', [Validators.required, Validators.pattern(/^https:\/\/.+/)]],
     productName: [''],
     targetPrice: [0, [Validators.required, Validators.min(0.01)]],
   });
+
+  onPriceInput(ev: Event): void {
+    const raw = (ev.target as HTMLInputElement).value;
+    const digits = raw.replace(/\D/g, '');
+    const cents = digits === '' ? 0 : parseInt(digits, 10);
+    const value = cents / 100;
+    this.form.controls.targetPrice.setValue(value);
+    this.priceMasked.set(this.formatBRL(value));
+  }
+
+  private formatBRL(v: number): string {
+    if (!v) return '';
+    return v.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
 
   submit(): void {
     if (this.form.invalid) return;
