@@ -14,6 +14,20 @@ import { AccountService } from './account.service';
     <main class="account-page">
       <h1>Minha conta</h1>
 
+      <section class="export-zone">
+        <h2>Exportar meus dados</h2>
+        <p>
+          Baixe uma cópia em JSON com sua conta, alertas e histórico de
+          consentimentos (LGPD, art. 18, V — portabilidade).
+        </p>
+        <div class="error" *ngIf="exportError()">{{ exportError() }}</div>
+        <div class="actions">
+          <button type="button" (click)="exportData()" [disabled]="exporting()">
+            {{ exporting() ? 'Gerando…' : 'Baixar meus dados (JSON)' }}
+          </button>
+        </div>
+      </section>
+
       <section class="danger-zone">
         <h2>Excluir minha conta</h2>
         <p class="warning">
@@ -56,6 +70,17 @@ import { AccountService } from './account.service';
         max-width: 640px;
         margin: 2rem auto;
         padding: 0 1rem;
+      }
+      .export-zone {
+        border: 1px solid #d6e0f3;
+        background: #f4f7fc;
+        border-radius: 10px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+      }
+      .export-zone h2 {
+        margin-top: 0;
+        color: #1c2c5b;
       }
       .danger-zone {
         border: 1px solid #f3c1c1;
@@ -121,6 +146,29 @@ export class AccountDeleteComponent {
   typed = '';
   loading = signal(false);
   error = signal<string | null>(null);
+  exporting = signal(false);
+  exportError = signal<string | null>(null);
+
+  async exportData(): Promise<void> {
+    if (this.exporting()) return;
+    this.exporting.set(true);
+    this.exportError.set(null);
+    try {
+      const blob = await firstValueFrom(this.account.exportAccount());
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `littlepricetracker-export-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      this.exportError.set('Não foi possível gerar o arquivo agora. Tente novamente.');
+    } finally {
+      this.exporting.set(false);
+    }
+  }
 
   cancel(): void {
     this.router.navigate(['/alerts']);

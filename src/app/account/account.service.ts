@@ -11,4 +11,8 @@ export class AccountService {
   deleteAccount(): Observable<void> {
     return this.http.delete<void>(this.base);
   }
+
+  exportAccount(): Observable<Blob> {
+    return this.http.get(`${this.base}/export`, { responseType: 'blob' });
+  }
 }
