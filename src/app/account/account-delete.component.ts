@@ -41,7 +41,7 @@ import { AccountService } from './account.service';
           <button
             type="button"
             class="danger"
-            [disabled]="typed !== 'EXCLUIR' || loading()"
+            [disabled]="!isConfirmed() || loading()"
             (click)="confirm()"
           >
             {{ loading() ? 'Excluindo…' : 'Excluir permanentemente' }}
@@ -126,8 +126,12 @@ export class AccountDeleteComponent {
     this.router.navigate(['/alerts']);
   }
 
+  isConfirmed(): boolean {
+    return this.typed.trim().toUpperCase() === 'EXCLUIR';
+  }
+
   async confirm(): Promise<void> {
-    if (this.typed !== 'EXCLUIR' || this.loading()) return;
+    if (!this.isConfirmed() || this.loading()) return;
     this.loading.set(true);
     this.error.set(null);
     try {

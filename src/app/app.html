@@ -1,5 +1,10 @@
 <header class="topbar">
-  <h1><a routerLink="/alerts">price-tracker</a></h1>
+  <h1>
+    <a routerLink="/alerts">
+      <img src="logo.png" alt="" class="brand-logo" />
+      <span>Little Price Tracker</span>
+    </a>
+  </h1>
   @if (auth.authenticated()) {
     <div class="user">
       <span>{{ auth.userEmail() }}</span>
