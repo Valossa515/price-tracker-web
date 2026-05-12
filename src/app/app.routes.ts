@@ -15,6 +15,11 @@ export const routes: Routes = [
     loadComponent: () => import('./alert/alert-create').then(m => m.AlertCreate),
   },
   {
+    path: 'alerts/:id',
+    canActivate: [authGuard, consentGuard],
+    loadComponent: () => import('./alert/alert-detail').then(m => m.AlertDetail),
+  },
+  {
     path: 'consent',
     canActivate: [authGuard],
     loadComponent: () =>

@@ -1,8 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AlertService } from './alert.service';
+import { ALERT_TYPE_LABEL, AlertType } from './alert.model';
 
 @Component({
   selector: 'app-alert-create',
@@ -22,16 +23,51 @@ import { AlertService } from './alert.service';
         Nome (opcional)
         <input type="text" formControlName="productName">
       </label>
+
       <label>
-        Preço alvo (R$)
-        <input
-          type="text"
-          inputmode="numeric"
-          autocomplete="off"
-          [value]="priceMasked()"
-          (input)="onPriceInput($event)"
-          placeholder="R$ 0,00">
+        Tipo de alerta
+        <select formControlName="alertType">
+          @for (t of types; track t.value) {
+            <option [value]="t.value">{{ t.label }}</option>
+          }
+        </select>
+        <small class="hint">{{ typeHint() }}</small>
       </label>
+
+      @if (alertType() === 'PRICE_BELOW_TARGET') {
+        <label>
+          Preço alvo (R$)
+          <input
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            [value]="priceMasked()"
+            (input)="onPriceInput($event)"
+            placeholder="R$ 0,00">
+        </label>
+      }
+
+      @if (alertType() === 'PERCENT_DISCOUNT') {
+        <label>
+          % de desconto vs média 30d
+          <input type="number" min="1" max="99" step="1" formControlName="discountPercent" placeholder="ex: 20">
+        </label>
+      }
+
+      @if (alertType() === 'PRICE_DROP') {
+        <label>
+          % de queda
+          <input type="number" min="1" max="99" step="1" formControlName="dropPercent" placeholder="ex: 15">
+        </label>
+        <label>
+          Janela (dias)
+          <input type="number" min="1" max="365" step="1" formControlName="dropWindowDays" placeholder="ex: 7">
+        </label>
+      }
+
+      @if (alertType() === 'BACK_IN_STOCK') {
+        <p class="hint">Sem parâmetros: dispara assim que o produto voltar a ficar disponível.</p>
+      }
 
       @if (error()) {
         <p class="error">{{ error() }}</p>
@@ -39,7 +75,7 @@ import { AlertService } from './alert.service';
 
       <div class="actions">
         <button type="button" (click)="cancel()">Cancelar</button>
-        <button type="submit" class="primary" [disabled]="form.invalid || submitting()">
+        <button type="submit" class="primary" [disabled]="!canSubmit() || submitting()">
           {{ submitting() ? 'Salvando...' : 'Criar' }}
         </button>
       </div>
@@ -49,7 +85,8 @@ import { AlertService } from './alert.service';
     h2 { margin-bottom: 1rem; }
     .form { display: flex; flex-direction: column; gap: 1rem; max-width: 500px; }
     label { display: flex; flex-direction: column; gap: 0.25rem; font-weight: 500; }
-    input { padding: 0.6rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
+    input, select { padding: 0.6rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
+    .hint { font-weight: 400; font-size: 0.85em; color: #666; }
     .actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
     button { padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid #ccc; background: white; cursor: pointer; }
     button.primary { background: #1976d2; color: white; border-color: #1976d2; }
@@ -62,6 +99,10 @@ export class AlertCreate {
   private readonly service = inject(AlertService);
   private readonly router = inject(Router);
 
+  readonly types: { value: AlertType; label: string }[] = (
+    ['PRICE_BELOW_TARGET', 'PERCENT_DISCOUNT', 'PRICE_DROP', 'BACK_IN_STOCK'] as AlertType[]
+  ).map(v => ({ value: v, label: ALERT_TYPE_LABEL[v] }));
+
   readonly submitting = signal(false);
   readonly error = signal<string | null>(null);
   readonly priceMasked = signal('');
@@ -69,8 +110,50 @@ export class AlertCreate {
   readonly form = this.fb.nonNullable.group({
     productUrl: ['', [Validators.required, Validators.pattern(/^https:\/\/.+/)]],
     productName: [''],
-    targetPrice: [0, [Validators.required, Validators.min(0.01)]],
+    alertType: ['PRICE_BELOW_TARGET' as AlertType, [Validators.required]],
+    targetPrice: [0],
+    discountPercent: [20],
+    dropPercent: [15],
+    dropWindowDays: [7],
   });
+
+  readonly alertType = signal<AlertType>('PRICE_BELOW_TARGET');
+
+  constructor() {
+    this.form.controls.alertType.valueChanges.subscribe(v => this.alertType.set(v));
+  }
+
+  readonly canSubmit = computed(() => {
+    if (this.form.controls.productUrl.invalid) return false;
+    switch (this.alertType()) {
+      case 'PRICE_BELOW_TARGET':
+        return (this.form.controls.targetPrice.value ?? 0) >= 0.01;
+      case 'PERCENT_DISCOUNT': {
+        const v = this.form.controls.discountPercent.value;
+        return v != null && v >= 1 && v <= 99;
+      }
+      case 'PRICE_DROP': {
+        const p = this.form.controls.dropPercent.value;
+        const d = this.form.controls.dropWindowDays.value;
+        return p != null && p >= 1 && p <= 99 && d != null && d >= 1 && d <= 365;
+      }
+      case 'BACK_IN_STOCK':
+        return true;
+    }
+  });
+
+  typeHint(): string {
+    switch (this.alertType()) {
+      case 'PRICE_BELOW_TARGET':
+        return 'Dispara quando o preço atual ≤ alvo.';
+      case 'PERCENT_DISCOUNT':
+        return 'Dispara quando o preço atual está pelo menos X% abaixo da média dos últimos 30 dias.';
+      case 'PRICE_DROP':
+        return 'Dispara quando o preço cair X% comparado ao preço de N dias atrás.';
+      case 'BACK_IN_STOCK':
+        return 'Dispara quando o produto sai de "indisponível" para "disponível".';
+    }
+  }
 
   onPriceInput(ev: Event): void {
     const raw = (ev.target as HTMLInputElement).value;
@@ -92,15 +175,21 @@ export class AlertCreate {
   }
 
   submit(): void {
-    if (this.form.invalid) return;
+    if (!this.canSubmit()) return;
     this.submitting.set(true);
     this.error.set(null);
-    const payload = this.form.getRawValue();
-    this.service.create({
-      productUrl: payload.productUrl,
-      productName: payload.productName || undefined,
-      targetPrice: payload.targetPrice,
-    }).subscribe({
+    const v = this.form.getRawValue();
+    const type = v.alertType;
+    const payload = {
+      productUrl: v.productUrl,
+      productName: v.productName || undefined,
+      alertType: type,
+      targetPrice: type === 'PRICE_BELOW_TARGET' ? v.targetPrice : null,
+      discountPercent: type === 'PERCENT_DISCOUNT' ? v.discountPercent : null,
+      dropPercent: type === 'PRICE_DROP' ? v.dropPercent : null,
+      dropWindowDays: type === 'PRICE_DROP' ? v.dropWindowDays : null,
+    };
+    this.service.create(payload).subscribe({
       next: () => this.router.navigate(['/alerts']),
       error: err => {
         this.submitting.set(false);
