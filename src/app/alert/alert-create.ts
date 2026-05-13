@@ -17,7 +17,12 @@ import { ALERT_TYPE_LABEL, AlertType } from './alert.model';
         <input
           type="url"
           formControlName="productUrl"
-          placeholder="https://www.mercadolivre.com.br/.../p/MLB...">
+          placeholder="https://www.mercadolivre.com.br/... ou https://shopee.com.br/...">
+        <small class="hint">
+          Marketplaces suportados: <strong>Mercado Livre</strong> e <strong>Shopee</strong>.
+          Cole o link da página do produto (ex.: <code>mercadolivre.com.br/.../p/MLB...</code>
+          ou <code>shopee.com.br/...-i.&lt;loja&gt;.&lt;item&gt;</code>).
+        </small>
       </label>
       <label>
         Nome (opcional)
@@ -87,6 +92,7 @@ import { ALERT_TYPE_LABEL, AlertType } from './alert.model';
     label { display: flex; flex-direction: column; gap: 0.25rem; font-weight: 500; }
     input, select { padding: 0.6rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
     .hint { font-weight: 400; font-size: 0.85em; color: #666; }
+    .hint code { background: #f3f3f3; padding: 0 0.25rem; border-radius: 3px; font-size: 0.95em; }
     .actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
     button { padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid #ccc; background: white; cursor: pointer; }
     button.primary { background: #1976d2; color: white; border-color: #1976d2; }
