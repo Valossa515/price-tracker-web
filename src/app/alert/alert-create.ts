@@ -4,6 +4,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AlertService } from './alert.service';
 import { ALERT_TYPE_LABEL, AlertType } from './alert.model';
+import {
+  PRODUCT_NAME_MAX_LEN,
+  PRODUCT_URL_MAX_LEN,
+  parseProductUrl,
+  productUrlValidator,
+  sanitizePlainText,
+} from '../shared/sanitize';
 
 @Component({
   selector: 'app-alert-create',
@@ -17,16 +24,26 @@ import { ALERT_TYPE_LABEL, AlertType } from './alert.model';
         <input
           type="url"
           formControlName="productUrl"
+          [maxlength]="productUrlMaxLen"
+          autocomplete="off"
+          spellcheck="false"
           placeholder="https://www.mercadolivre.com.br/... ou https://shopee.com.br/...">
         <small class="hint">
           Marketplaces suportados: <strong>Mercado Livre</strong> e <strong>Shopee</strong>.
           Cole o link da página do produto (ex.: <code>mercadolivre.com.br/.../p/MLB...</code>
           ou <code>shopee.com.br/...-i.&lt;loja&gt;.&lt;item&gt;</code>).
         </small>
+        @if (form.controls.productUrl.touched && form.controls.productUrl.errors?.['productUrl']) {
+          <small class="error">URL inválida. Use https:// de Mercado Livre ou Shopee.</small>
+        }
       </label>
       <label>
         Nome (opcional)
-        <input type="text" formControlName="productName">
+        <input
+          type="text"
+          formControlName="productName"
+          [maxlength]="productNameMaxLen"
+          autocomplete="off">
       </label>
 
       <label>
@@ -113,9 +130,12 @@ export class AlertCreate {
   readonly error = signal<string | null>(null);
   readonly priceMasked = signal('');
 
+  readonly productUrlMaxLen = PRODUCT_URL_MAX_LEN;
+  readonly productNameMaxLen = PRODUCT_NAME_MAX_LEN;
+
   readonly form = this.fb.nonNullable.group({
-    productUrl: ['', [Validators.required, Validators.pattern(/^https:\/\/.+/)]],
-    productName: [''],
+    productUrl: ['', [Validators.required, productUrlValidator()]],
+    productName: ['', [Validators.maxLength(PRODUCT_NAME_MAX_LEN)]],
     alertType: ['PRICE_BELOW_TARGET' as AlertType, [Validators.required]],
     targetPrice: [0],
     discountPercent: [20],
@@ -186,9 +206,15 @@ export class AlertCreate {
     this.error.set(null);
     const v = this.form.getRawValue();
     const type = v.alertType;
+    const parsedUrl = parseProductUrl(v.productUrl);
+    if (!parsedUrl) {
+      this.submitting.set(false);
+      this.error.set('URL inválida. Use https:// de Mercado Livre ou Shopee.');
+      return;
+    }
     const payload = {
-      productUrl: v.productUrl,
-      productName: v.productName || undefined,
+      productUrl: parsedUrl.href,
+      productName: sanitizePlainText(v.productName, PRODUCT_NAME_MAX_LEN),
       alertType: type,
       targetPrice: type === 'PRICE_BELOW_TARGET' ? v.targetPrice : null,
       discountPercent: type === 'PERCENT_DISCOUNT' ? v.discountPercent : null,

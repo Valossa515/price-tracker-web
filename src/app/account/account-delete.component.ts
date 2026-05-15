@@ -43,6 +43,8 @@ import { AccountService } from './account.service';
             [(ngModel)]="typed"
             [disabled]="loading()"
             autocomplete="off"
+            maxlength="16"
+            spellcheck="false"
           />
         </label>
 
