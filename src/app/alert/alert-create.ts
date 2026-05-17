@@ -144,12 +144,19 @@ export class AlertCreate {
   });
 
   readonly alertType = signal<AlertType>('PRICE_BELOW_TARGET');
+  /** Bump signal para forçar reavaliação de `canSubmit` quando o form muda. */
+  private readonly formTick = signal(0);
 
   constructor() {
     this.form.controls.alertType.valueChanges.subscribe(v => this.alertType.set(v));
+    // FormGroup.valueChanges/statusChanges não são signals; precisamos
+    // notificar manualmente o `computed` abaixo a cada alteração.
+    this.form.valueChanges.subscribe(() => this.formTick.update(n => n + 1));
+    this.form.statusChanges.subscribe(() => this.formTick.update(n => n + 1));
   }
 
   readonly canSubmit = computed(() => {
+    this.formTick(); // dependência para reavaliar quando o form muda
     if (this.form.controls.productUrl.invalid) return false;
     switch (this.alertType()) {
       case 'PRICE_BELOW_TARGET':
